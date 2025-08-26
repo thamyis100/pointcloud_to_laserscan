@@ -1,10 +1,7 @@
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
-from launch.actions import ExecuteProcess
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
-
-import yaml
 
 
 def generate_launch_description():
@@ -13,19 +10,6 @@ def generate_launch_description():
             name='scanner', default_value='scanner',
             description='Namespace for sample topics'
         ),
-        ExecuteProcess(
-            cmd=[
-                'ros2', 'topic', 'pub', '-r', '10',
-                '--qos-profile', 'sensor_data',
-                [LaunchConfiguration(variable_name='scanner'), '/scan'],
-                'sensor_msgs/msg/LaserScan', yaml.dump({
-                    'header': {'frame_id': 'scan'}, 'angle_min': -1.0,
-                    'angle_max': 1.0, 'angle_increment': 0.1, 'range_max': 10.0,
-                    'ranges': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-                })
-            ],
-            name='scan_publisher'
-        ),
         Node(
             package='tf2_ros',
             executable='static_transform_publisher',
@@ -33,15 +17,25 @@ def generate_launch_description():
             arguments=[
                 '--x', '0', '--y', '0', '--z', '0',
                 '--qx', '0', '--qy', '0', '--qz', '0', '--qw', '1',
-                '--frame-id', 'map', '--child-frame-id', 'scan'
+                '--frame-id', 'map', '--child-frame-id', 'cloud'
             ]
         ),
         Node(
-            package='pointcloud_to_laserscan',
-            executable='laserscan_to_pointcloud_node',
-            name='laserscan_to_pointcloud',
-            remappings=[('scan_in', [LaunchConfiguration(variable_name='scanner'), '/scan']),
-                        ('cloud', [LaunchConfiguration(variable_name='scanner'), '/cloud'])],
-            parameters=[{'target_frame': 'scan', 'transform_tolerance': 0.01}]
-        ),
+            package='pointcloud_to_laserscan', executable='pointcloud_to_laserscan_node',
+            parameters=[{
+                'target_frame': 'cloud',
+                'transform_tolerance': 0.01,
+                'min_height': 0.0,
+                'max_height': 1.0,
+                'angle_min': -3.14,  # -M_PI
+                'angle_max': 3.14,  # M_PI
+                'angle_increment': 0.0087,  # M_PI/360.0
+                'scan_time': 0.3333,
+                'range_min': 0.45,
+                'range_max': 4.0,
+                'use_inf': True,
+                'inf_epsilon': 1.0
+            }],
+            name='pointcloud_to_laserscan'
+        )
     ])

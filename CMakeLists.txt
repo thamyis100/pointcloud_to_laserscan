@@ -27,7 +27,7 @@ target_link_libraries(laserscan_to_pointcloud
   rclcpp_components::component
   tf2::tf2
   tf2_ros::tf2_ros
-  tf2_sensor_msgs::tf2_sensor_msgs
+  # tf2_sensor_msgs::tf2_sensor_msgs
 )
 rclcpp_components_register_node(laserscan_to_pointcloud
   PLUGIN "pointcloud_to_laserscan::LaserScanToPointCloudNode"
@@ -48,7 +48,7 @@ target_link_libraries(pointcloud_to_laserscan
   rclcpp_components::component
   tf2::tf2
   tf2_ros::tf2_ros
-  tf2_sensor_msgs::tf2_sensor_msgs
+  # tf2_sensor_msgs::tf2_sensor_msgs
 )
 rclcpp_components_register_node(pointcloud_to_laserscan
   PLUGIN "pointcloud_to_laserscan::PointCloudToLaserScanNode"
